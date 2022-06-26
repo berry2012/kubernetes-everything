@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: world
+  namespace: world
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "world.universe.mine"  #create this record in node's /etc/hosts
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/europe"
+        backend:
+          service:
+            name: europe
+            port:
+              number: 80
+
+      - pathType: Prefix
+        path: "/asia"
+        backend:
+          service:
+            name: asia
+            port:
+              number: 80
