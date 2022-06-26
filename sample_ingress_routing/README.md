@@ -1,6 +1,8 @@
 # Ingress Routing to Multiple Services
 Using Ingress to route to 2 different services based on path
 
+![alt text](./k8s_ingress_routing.png)
+
 
 ## Ingress Controller 
 -- Nginx Ingress Controller was used for this sample. 
