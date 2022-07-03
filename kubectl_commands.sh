@@ -20,13 +20,14 @@ export now="--force --grace-period 0"   # k delete pod x $now
 
 # pods
 k run pod_with_command --image=busybox:1.31.0 $do --command -- sh -c "touch /tmp/ready && sleep 1d" > pod_with_command.yaml
-
 k -n beta run map-api --image=nginx:1.17.3-alpine --labels map-api
-
+k run nginx --image=nginx --restart=Never --port=80 --expose
 k run tmp --restart=Never --rm -i --image=nginx:alpine -- curl 10.44.0.78
 k run tmp --restart=Never --rm -i --image=nginx:alpine -- curl -m 5 jupiter-crew-svc:8080
 k run tmp --restart=Never --rm -it --image=nginx:alpine -- curl -m 5 jupiter-crew-svc:8080
 k run tmp --restart=Never --rm -i --image=busybox -i -- wget -O- frontend:80
+k run tmp --image=busybox $do --requests=memory=20Mi --limits=memory=50Mi
+
 
 # jobs
 k -n delta create job api-job --image=busybox:1.31.0 $do -- sh -c "sleep 2 && echo done" > job.yaml
@@ -34,3 +35,12 @@ k -n delta create job api-job --image=busybox:1.31.0 $do -- sh -c "sleep 2 && ec
 # label
 k -n sun label pod -l "type in (worker,runner)" protected=true
 k -n sun annotate pod -l protected=true protected="do not delete this pod"
+
+# convert ClusterIP service to NodePort
+kubectl patch svc nginx -p '{"spec":{"type":"NodePort"}}' 
+
+# For example, to convert an older Deployment to apps/v1, you can run:
+kubectl-convert -f ./my-deployment.yaml --output-version apps/v1
+
+# comparing planned deployment with what is in cluster
+kubectl diff -f ./manifest-old.yaml
