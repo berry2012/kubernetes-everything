@@ -5,7 +5,7 @@ metadata:
   labels:
     app: wale-nginx
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: wale-nginx
