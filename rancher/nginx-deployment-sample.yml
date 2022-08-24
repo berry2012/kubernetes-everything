@@ -43,6 +43,8 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: my-shared-ingress # to be used by multiple services. Edit ingress and delete finalizers to be able to delete the ingress, otherwise, it will hang.
+    alb.ingress.kubernetes.io/tags: Auto-delete=no, Workload=rancher-eks-poc, Automation=shutdown-cob
 spec:
   ingressClassName: alb
   rules:
