@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: cassandra
+  name: cassandra    #STATEFULSET_NAME
   labels:
     app: cassandra
 spec:
@@ -81,7 +81,7 @@ spec:
           mountPath: /cassandra_data
   volumeClaimTemplates:
   - metadata:
-      name: cassandra-data
+      name: cassandra-data            #PVC_TEMPLATE_NAME
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: ebs-sc

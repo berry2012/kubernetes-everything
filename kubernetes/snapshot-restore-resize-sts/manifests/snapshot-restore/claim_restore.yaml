@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: cassandra-data-cassandra-0 # name of old pvc
+  name: cassandra-data-cassandra-0 # name of old pvc - PVC_TEMPLATE_NAME-STATEFULSET_NAME-REPLICA_INDEX
   labels:
     app: cassandra  
 spec:
@@ -19,7 +19,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: cassandra-data-cassandra-1 # name of old pvc
+  name: cassandra-data-cassandra-1 # name of old pvc - PVC_TEMPLATE_NAME-STATEFULSET_NAME-REPLICA_INDEX
   labels:
     app: cassandra    
 spec:
@@ -37,7 +37,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: cassandra-data-cassandra-2  # name of old pvc
+  name: cassandra-data-cassandra-2  # name of old pvc - PVC_TEMPLATE_NAME-STATEFULSET_NAME-REPLICA_INDEX
   labels:
     app: cassandra    
 spec:
