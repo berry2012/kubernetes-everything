@@ -249,8 +249,6 @@ This example shows you how to create a snapshot and restore an EBS `PersistentVo
 
     ```sh
     $ kubectl delete -f manifests/snapshot
-    
-    volumesnapshot.snapshot.storage.k8s.io "ebs-volume-snapshot" deleted
     ```
 
     ```sh
