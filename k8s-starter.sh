@@ -10,6 +10,8 @@ echo 'set shiftwidth=2' >> ~/.vimrc
 ## create an alias
 echo 'alias k=kubectl' >> ~/.bashrc
 echo 'alias kg="kubectl get"' >> ~/.bashrc
+echo 'alias kc="kubectl create -f"' >> ~/.bashrc
+echo 'alias ka="kubectl apply -f"' >> ~/.bashrc
 echo 'alias kd="kubectl describe"' >> ~/.bashrc
 echo 'export do="--dry-run=client -o yaml"' >> ~/.bashrc   
 echo 'export now="--force --grace-period 0"' >> ~/.bashrc
