@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fsxlustremount
+spec:
+  schedule: "*/2 * * * *" #every 2 minutes
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: fsxlustremount
+            image: busybox:1.28
+            command:
+            - /bin/sh
+            - -c
+            - echo $(date) - Hello from the Kubernetes cluster >> /output/success.txt
+            volumeMounts:
+            - mountPath: /output
+              name: fsx-lustre-volume
+          volumes:
+          - name: fsx-lustre-volume
+            hostPath:
+              # directory location on host
+              path: /fsx
+              # this field is optional
+              type: Directory
+          restartPolicy: OnFailure      
