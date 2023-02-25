@@ -44,3 +44,17 @@ kubectl-convert -f ./my-deployment.yaml --output-version apps/v1
 
 # comparing planned deployment with what is in cluster
 kubectl diff -f ./manifest-old.yaml
+
+# --------------Amazon EKS ------------------
+# Get nodes with AZ and instance type
+kubectl get -L topology.kubernetes.io/zone,node.kubernetes.io/instance-type
+
+# Get instance ID as extra column
+kubectl get nodes -o custom-columns=Name:.metadata.name,Instance:.spec.providerID
+
+# Get the current running pods on nodes and the maximum allocatable pods the node can run
+for node in $(kg nodes | awk '{print $1}' | awk 'NR!=1'); do echo Inspecting Node: $node;  echo 'Node running' $(k describe node $node | grep 'Non-terminated'); echo 'Allocatable pods:' $(k get node $node -o custom-columns=Count:.status.allocatable.pods); echo ''; done
+
+
+
+
