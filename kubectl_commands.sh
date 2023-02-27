@@ -47,7 +47,7 @@ kubectl diff -f ./manifest-old.yaml
 
 # --------------Amazon EKS ------------------
 # Get nodes with AZ and instance type
-kubectl get -L topology.kubernetes.io/zone,node.kubernetes.io/instance-type
+kubectl get nodes -L topology.kubernetes.io/zone,node.kubernetes.io/instance-type
 
 # Get instance ID as extra column
 kubectl get nodes -o custom-columns=Name:.metadata.name,Instance:.spec.providerID
