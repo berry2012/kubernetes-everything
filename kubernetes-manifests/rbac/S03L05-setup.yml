@@ -1,0 +1,40 @@
+
+# pod-watch Pod in the auth namespace
+# get and list Pods and Pod logs in the auth namespace.
+# Create a service account called pod-monitor and assign it appropriate RBAC permissions for the pod-watch Pod.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: auth
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::520817024429:role/476367868464productioncrossaccount
+  name: aws-sdk
+  namespace: auth
+
+
+# kubectl create clusterrole pod-reader --verb=get,list,watch --resource=pods
+# kubectl create rolebinding aws-sdk-binding --clusterrole=pod-reader --serviceaccount=auth:aws-sdk --namespace=auth
+
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-aws-sdk
+  namespace: auth
+spec:
+  containers:
+  - image: radial/busyboxplus:curl
+    name: watcher
+    command: ['sh', '-c', 'TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token); while true; do if curl -s -o /dev/null -k -m 3 -H "Authorization: Bearer $TOKEN" https://kubernetes.default.svc.cluster.local/api/v1/namespaces/auth/pods/; then echo "[SUCCESS] Successfully viewed Pods!"; else echo "[FAIL] Failed to view Pods!"; fi; sleep 5; done']
+  serviceAccountName: aws-sdk
+   
+

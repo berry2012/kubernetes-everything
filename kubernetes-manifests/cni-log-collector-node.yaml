@@ -1,0 +1,22 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cni-log-collector
+spec:
+  template:
+    spec:
+      hostPID: true
+      containers:
+        - name: log collector
+          image: nginx
+          command: ["sh", "-c", "./opt-cni-bin/aws-cni-support.sh"]
+          volumeMounts:
+            - name: opt-cni-bin
+              mountPath: /opt/cni/bin/
+              readOnly: true
+      restartPolicy: Never
+      volumes:
+        - name: opt-cni-bin
+          hostPath:
+            path: "/opt/cni/bin/"

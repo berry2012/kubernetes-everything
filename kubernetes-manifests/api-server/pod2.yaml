@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-envars-2
+spec:
+  containers:
+    - name: pod-envars
+      args:
+        - 'while true; do echo -en "\n"; printf NAMESPACE=$(cat ${NAMESPACE})"\n"; curl --cacert ${CACERT} --header "Authorization: Bearer $(cat ${TOKEN})" -X GET ${APISERVER}/api; sleep 5; done;'
+      command:
+        - sh
+        - -c
+      image: nginx:alpine
+      env:
+        - name: APISERVER
+          value: "https://kubernetes.default.svc"
+        - name: SERVICEACCOUNT
+          value: "/var/run/secrets/kubernetes.io/serviceaccount"
+        - name: NAMESPACE
+          value: "$(SERVICEACCOUNT)/namespace"
+        - name: TOKEN
+          value: "$(SERVICEACCOUNT)/token"
+        - name: CACERT
+          value: "$(SERVICEACCOUNT)/ca.crt"

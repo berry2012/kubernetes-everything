@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: host-namespaces
+  namespace: auth
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  hostIPC: true   # constainers will use host's inter-process communication namespace
+  hostNetwork: true # constainers will use host's network namespace
+  hostPID: true # constainers will use host's process ID namespace
+  containers:
+  - image: radial/busyboxplus:curl
+    name: watcher
+    command: ['sh', '-c', 'TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token); while true; do if curl -s -o /dev/null -k -m 3 -H "Authorization: Bearer $TOKEN" https://kubernetes.default.svc.cluster.local/api/v1/namespaces/auth/pods/; then echo "[SUCCESS] Successfully viewed Pods!"; else echo "[FAIL] Failed to view Pods!"; fi; sleep 5; done']
+    securityContext:
+      allowPrivilegeEscalation: false
+  serviceAccountName: aws-sdk
