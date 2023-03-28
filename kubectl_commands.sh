@@ -45,6 +45,17 @@ kubectl-convert -f ./my-deployment.yaml --output-version apps/v1
 # comparing planned deployment with what is in cluster
 kubectl diff -f ./manifest-old.yaml
 
+
+# remove finalizers from some pods 
+for pod in $(kg po | grep load | awk '{print $1}'); 
+do 
+  echo patching pod: $pod; 
+  kubectl patch pod/$pod \
+      --type json \
+      --patch='[ { "op": "remove", "path": "/metadata/finalizers" } ]'
+done
+
+
 # --------------Amazon EKS ------------------
 # Get nodes with AZ and instance type
 kubectl get nodes -L topology.kubernetes.io/zone,node.kubernetes.io/instance-type
