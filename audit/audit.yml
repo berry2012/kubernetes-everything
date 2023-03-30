@@ -1,0 +1,24 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+# Log request and response bodies for all changes to Namespaces.
+- level: RequestResponse
+  resources:
+  - group: ""
+    resources: ["namespaces"]
+
+# Log request bodies (but not response bodies) for changes to Pods and Services in the web Namespace.
+- level: Request
+  resources:
+  - group: ""
+    resources: ["pods", "services"]
+  namespaces: ["web"]
+
+# Log metadata for all changes to Secrets.
+- level: Metadata
+  resources:
+  - group: ""
+    resources: ["secrets"]
+
+# Create a catchall rule to log metadata for all other requests.
+- level: Metadata
