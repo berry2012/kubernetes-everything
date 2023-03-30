@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: auth-rest
+  namespace: dev
+spec:
+  containers:
+  - image: nginx:1.19.1
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    resources: {}
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsUser: 0
+      readOnlyRootFilesystem: true
+    volumeMounts:
+    - mountPath: /var/cache/nginx
+      name: cache
+    - mountPath: /var/run
+      name: run
+  volumes:
+  - emptyDir: {}
+    name: cache
+  - emptyDir: {}
+    name: run
