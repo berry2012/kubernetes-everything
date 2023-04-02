@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: create-folder
+  # namespace: kube-system
+  labels:
+    k8s-app: create-folder
+spec:
+  selector:
+    matchLabels:
+      name: create-folder
+  template:
+    metadata:
+      labels:
+        name: create-folder
+    spec:
+      containers:
+      - name: create-folder
+        image: busybox
+        command: ["chroot", "/host"]  # changes the root directory for the current running process and their children
+        args:
+        - /bin/sh
+        - -c
+        - >
+          cd home;
+          hostname;
+          mkdir -p /opt/service_logs/customlogging;
+          chmod -R 777 /opt/service_logs/;
+          ls -l /opt/service_logs;
+          sleep 5m;
+        tty: true
+        stdin: true
+        stdinOnce: true
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: host
+          mountPath: /host
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: host
+        hostPath:
+          path: /
+      hostNetwork: true
+      hostIPC: true
+      hostPID: true
+      restartPolicy: Always
+
+
+# Use Cases 
+# - I cannot SSH into my node due to no ssh key or ssm role configured or PID exhaustion
+# - I can still schedule pods on my nodes
+# - I don't want to incur additional S3 cost 
+
+# Getting the Logs
+# kubectl attach -it pod-node-create-folder -c pod-node-create-folder
+# kubectl cp create-folder-nfdnz:/host/var/log/eks_i-09be0a5eae8db4457_2023-03-21_1803-UTC_0.7.1.tar.gz /tmp/eks_i-09be0a5eae8db4457_2023-03-21_1803-UTC_0.7.1.tar.gz
+# mv /tmp/eks_i-096456d768edf58f7_2023-03-21_1640-UTC_0.7.1.tar.gz ~/Documents/EKS/

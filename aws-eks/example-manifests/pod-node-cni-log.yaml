@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-node-cni-log
+  labels:
+    plugin: pod-node-cni-log
+spec:
+  nodeName: ip-192-168-104-27.eu-west-1.compute.internal # <WORKER_NODE_NAME>
+  containers:
+  - name: ssh-to-node
+    image: nginx
+    imagePullPolicy: IfNotPresent
+    command: ["chroot", "/host"]
+    args:
+    - /bin/sh
+    - -c
+    - >
+      cd home;
+      hostname;
+      pwd;
+      ls /opt/cni/bin/aws-cni-support.sh;
+      sh /opt/cni/bin/aws-cni-support.sh;
+      sleep 5m;
+    tty: true
+    stdin: true
+    stdinOnce: true
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: host
+      mountPath: /host
+  volumes:
+  - name: host
+    hostPath:
+      path: /
+  hostNetwork: true
+  hostIPC: true
+  hostPID: true
+  restartPolicy: Never
+
+
+# kubectl attach -it pod-node-cni-log -c pod-node-cni-log
+# kubectl cp pod-node-cni-log:/host/var/log/eks_i-096456d768edf58f7_2023-03-21_1640-UTC_0.7.1.tar.gz /tmp/eks_i-096456d768edf58f7_2023-03-21_1640-UTC_0.7.1.tar.gz
+# mv /tmp/eks_i-096456d768edf58f7_2023-03-21_1640-UTC_0.7.1.tar.gz ~/Documents/EKS/
