@@ -559,5 +559,3 @@ kube-bench is a popular open source CIS Kubernetes Benchmark assessment tool cre
 kube-bench is a Go application that checks whether Kubernetes is deployed securely by running the checks documented in the CIS Kubernetes Benchmark.
 https://www.aquasec.com/cloud-native-academy/kubernetes-in-production/kubernetes-cis-benchmark-best-practices-in-brief/
 https://archive.eksworkshop.com/intermediate/300_cis_eks_benchmark/
-
-
