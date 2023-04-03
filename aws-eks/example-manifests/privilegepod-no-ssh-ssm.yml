@@ -1,0 +1,25 @@
+# when cx's node has no ssh or ssm - or use daemonset with privilege pod to install SSM agent
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  volumes:
+  - name: test-volume
+    hostPath:
+      # directory location on host . i.e the root of the host
+      path: /
+      # this field is optional
+      type: Directory
+  containers:
+  - name: sec-ctx-demo
+    image: busybox:1.28
+    command: [ "sh", "-c", "sleep 1h" ]
+    volumeMounts:
+    - name: test-volume
+      mountPath: /data
+    securityContext:
+      allowPrivilegeEscalation: true
+  nodeName: ip-192-168-78-32.eu-west-1.compute.internal
+
+# kubectl exec -it pod/security-context-demo -- tail -f /data/var/log/messages  

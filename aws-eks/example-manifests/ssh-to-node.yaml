@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ssh-to-node
+  labels:
+    plugin: ssh-to-node
+spec:
+  nodeName: ip-192-168-104-27.eu-west-1.compute.internal # <WORKER_NODE_NAME>
+  containers:
+  - name: ssh-to-node
+    image: nginx
+    imagePullPolicy: IfNotPresent
+    command: ["chroot", "/host"]
+    tty: true
+    stdin: true
+    stdinOnce: true
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: host
+      mountPath: /host
+  volumes:
+  - name: host
+    hostPath:
+      path: /
+  hostNetwork: true
+  hostIPC: true
+  hostPID: true
+  restartPolicy: Never
+
+
+  # kubectl attach -it ssh-to-node -c ssh-to-node
+# sh-4.2# ls /opt/cni/bin/aws-cni-support.sh
+# /opt/cni/bin/aws-cni-support.sh
+# sh-4.2# sh /opt/cni/bin/aws-cni-support.sh
+
+#         This is version 0.7.1. New versions can be found at https://github.com/awslabs/amazon-eks-ami/blob/master/log-collector-script/
+
+# Trying to collect common operating system logs... 
+# Trying to collect kernel logs... 
+# Trying to collect mount points and volume information... 
+# Trying to collect SELinux status... 
+# Trying to collect iptables information... 
+# Trying to collect installed packages... 
+# Trying to collect active system services... 
+# Trying to Collect Containerd daemon information... 
+# Trying to Collect Containerd running information... 
+# Trying to Collect Docker daemon information... 
+
+#         Warning: The Docker daemon is not running. 
+
+# Trying to collect kubelet information... 
+# Trying to collect L-IPAMD introspection information... Trying to collect L-IPAMD prometheus metrics... Trying to collect L-IPAMD checkpoint... 
+# Trying to collect Multus logs if they exist... 
+# Trying to collect sysctls information... 
+# Trying to collect networking infomation... conntrack v1.4.4 (conntrack-tools): 523 flow entries have been shown.
+
+# Trying to collect CNI configuration information... 
+# Trying to collect Docker daemon logs... 
+# Trying to Collect sandbox-image daemon information... 
+# Trying to Collect CPU Throttled Process Information... 
+# Trying to Collect IO Throttled Process Information... 
+# Trying to archive gathered information... 
+
+#         Done... your bundled logs are located in /var/log/eks_i-096456d768edf58f7_2023-03-21_1619-UTC_0.7.1.tar.gz
+
+# sh-4.2# exit  

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-cni-log-collection
+  # namespace: kube-system
+  labels:
+    k8s-app: cni-log
+spec:
+  selector:
+    matchLabels:
+      name: node-cni-log-collection
+  template:
+    metadata:
+      labels:
+        name: node-cni-log-collection
+    spec:
+      containers:
+      - name: node-cni-log-collection
+        image: nginx
+        command: ["chroot", "/host"]  # changes the root directory for the current running process and their children
+        args:
+        - /bin/sh
+        - -c
+        - >
+          cd home;
+          hostname;
+          ls /opt/cni/bin/aws-cni-support.sh;
+          sh /opt/cni/bin/aws-cni-support.sh;
+          sleep 5m;
+        tty: true
+        stdin: true
+        stdinOnce: true
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: host
+          mountPath: /host
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: host
+        hostPath:
+          path: /
+      hostNetwork: true
+      hostIPC: true
+      hostPID: true
+      restartPolicy: Always
+
+
+# Use Cases 
+# - I cannot SSH into my node due to no ssh key or ssm role configured or PID exhaustion
+# - I can still schedule pods on my nodes
+# - I don't want to incur additional S3 cost 
+
+# Getting the Logs
+# kubectl attach -it pod-node-cni-log -c pod-node-cni-log
+# kubectl cp node-cni-log-collection-nfdnz:/host/var/log/eks_i-09be0a5eae8db4457_2023-03-21_1803-UTC_0.7.1.tar.gz /tmp/eks_i-09be0a5eae8db4457_2023-03-21_1803-UTC_0.7.1.tar.gz
+# mv /tmp/eks_i-096456d768edf58f7_2023-03-21_1640-UTC_0.7.1.tar.gz ~/Documents/EKS/
