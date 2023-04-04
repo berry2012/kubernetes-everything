@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: container-data
+spec:
+  containers:
+  - image: bash
+    name: container-data
+    command:
+      - "sh"
+      - "-c"
+      - "while true; do sleep 1d; done"
+    volumeMounts:
+    - mountPath: /containerdata
+      name: containerdata
+  volumes:
+  - name: containerdata
+    hostPath:
+      # directory location on host
+      path: /run/containerd
+      # this field is optional
+      type: ""
