@@ -356,14 +356,14 @@ spec:
   ports:
   - appProtocol: http
     name: http
-    port: 8080
+    port: 80
     protocol: TCP
-    targetPort: http
+    targetPort: 8080
   - appProtocol: https
     name: https
-    port: 8443
+    port: 443
     protocol: TCP
-    targetPort: https
+    targetPort: 8443
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
