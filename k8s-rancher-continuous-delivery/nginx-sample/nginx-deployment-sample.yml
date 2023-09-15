@@ -3,9 +3,9 @@ kind: Namespace
 metadata:
   name: "k8scd"
   labels:
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/enforce: restricted 
-    pod-security.kubernetes.io/warn: restricted    
+    pod-security.kubernetes.io/audit: enforced
+    pod-security.kubernetes.io/enforce: enforced 
+    pod-security.kubernetes.io/warn: enforced    
  
 ---  
 apiVersion: apps/v1
