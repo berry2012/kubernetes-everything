@@ -1,18 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "rancher"
+  labels:
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/enforce: restricted 
+    pod-security.kubernetes.io/warn: restricted    
+---  
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wale-nginx-deployment
+  name: k8scd-nginx-deployment
+  namespace: rancher
   labels:
-    app: wale-nginx
+    app: k8scd-nginx
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wale-nginx
+      app: k8scd
   template:
     metadata:
       labels:
-        app: wale-nginx
+        app: k8scd
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -21,7 +31,7 @@ spec:
       containers:
       - image: public.ecr.aws/nginx/nginx:latest
         imagePullPolicy: Always
-        name: "demov2-nginx"
+        name: "k8scd"
         resources:
           requests:
            memory: "64Mi"
@@ -69,10 +79,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: wale-nginx-service
+  name: k8scd-nginx-service
 spec:
   selector:
-    app: wale-nginx
+    app: k8scd
   type: ClusterIP
   ports:
     - protocol: TCP
@@ -83,8 +93,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: wale-nginx-ingress
-  namespace: wale-demo
+  name: k8scd-nginx-ingress
+  namespace: rancher
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
@@ -104,8 +114,8 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: wale-nginx-service
+              name: k8scd-nginx-service
               port:
                 number: 8080
 
-# kubectl get pods -l 'app=wale-nginx' -o wide | awk {'print $1" " $3 " " $6'} | column -t
+# kubectl get pods -l 'app=k8scd-nginx' -o wide | awk {'print $1" " $3 " " $6'} | column -t
