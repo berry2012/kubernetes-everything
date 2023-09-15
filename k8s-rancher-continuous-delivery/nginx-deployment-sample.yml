@@ -3,9 +3,9 @@ kind: Namespace
 metadata:
   name: "rancher"
   labels:
-    pod-security.kubernetes.io/audit: restricted
-    pod-security.kubernetes.io/enforce: restricted 
-    pod-security.kubernetes.io/warn: restricted    
+    pod-security.kubernetes.io/audit: enforced
+    pod-security.kubernetes.io/enforce: enforced 
+    pod-security.kubernetes.io/warn: enforced    
 ---  
 apiVersion: apps/v1
 kind: Deployment
@@ -80,6 +80,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: k8scd-nginx-service
+  namespace: rancher  
 spec:
   selector:
     app: k8scd
