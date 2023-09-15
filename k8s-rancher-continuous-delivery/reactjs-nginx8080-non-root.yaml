@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "demo"
+  labels:
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/enforce: restricted 
+    pod-security.kubernetes.io/warn: restricted    
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "demo-nginx-deployment"
+  namespace: "demo"
+spec:
+  selector:
+    matchLabels:
+      app: "demo-nginx"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "demo-nginx"
+        role: "backend"
+    spec:
+      dnsPolicy: Default # "Default" is not the true default value
+      enableServiceLinks: false    # Disable service discovery
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true 
+        runAsUser: 1000   
+      containers:
+      - image: public.ecr.aws/q7r1z0m4/reactjs-nginx-8080:node18-alpine
+      # - image: nginx
+      #   command: ["/bin/sh", "-c", "sed -i 's/listen  .*/listen 8080;/g' /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]       
+        imagePullPolicy: Always
+        name: "demo-nginx"
+        resources:
+          requests:
+           memory: "64Mi"
+           cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL      
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: cache
+          mountPath: /var/cache/nginx
+        - name: usr
+          mountPath: /var/run    
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: usr
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-service
+  namespace: demo  
+  annotations:
+   service.kubernetes.io/topology-mode: auto  
+spec:
+  selector:
+    app: "demo-nginx"
+    role: "backend"    
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+  
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: demo
+  name: demo-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: my-shared-ingress # to be used by multiple services. Edit ingress and delete finalizers to be able to delete the ingress, otherwise, it will hang.
+    alb.ingress.kubernetes.io/tags: Auto-delete=no
+spec:
+  ingressClassName: alb
+  defaultBackend:
+    service:
+      name: demo-service
+      port:
+        number: 80
+  rules:
+    - host: reactjsapp.whalecloud.awsps.myinstance.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: demo-service
+              port:
+                number: 80

@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wale-nginx-deployment
+  labels:
+    app: wale-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wale-nginx
+  template:
+    metadata:
+      labels:
+        app: wale-nginx
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault   
+      containers:
+      - image: public.ecr.aws/nginx/nginx:latest
+        imagePullPolicy: Always
+        name: "demov2-nginx"
+        resources:
+          requests:
+           memory: "64Mi"
+           cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 80
+        command: ["/bin/sh"]
+        args: ["-c", "echo PodName: $MY_POD_NAME  NodeName: $MY_NODE_NAME  podIP: $MY_POD_IP> /usr/share/nginx/html/index.html && exec nginx -g 'daemon off;'"]       
+        env:
+        - name: MY_NODE_NAME
+          valueFrom:
+           fieldRef:
+            fieldPath: spec.nodeName
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: cache
+          mountPath: /var/cache/nginx
+        - name: usr
+          mountPath: /var/run    
+        - name: tmp
+          mountPath: /usr/share/nginx/html           
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: usr
+          emptyDir: {}
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wale-nginx-service
+spec:
+  selector:
+    app: wale-nginx
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wale-nginx-ingress
+  namespace: wale-demo
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: my-shared-ingress # to be used by multiple services. Edit ingress and delete finalizers to be able to delete the ingress, otherwise, it will hang.
+    alb.ingress.kubernetes.io/tags: Auto-delete=no
+    ## SSL Settings
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}, {"HTTP": 8080}, {"HTTPS": 8443}]'
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:XXXXXXXXXXXX:certificate/fcc58e38-dbf0-4f55-9d0e-955da11d2da0
+    # alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06 #Optional (Picks default if not used)
+spec:
+  ingressClassName: alb
+  rules:
+    - host: k8scd.whalecloud.awsps.myinstance.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: wale-nginx-service
+              port:
+                number: 8080
+
+# kubectl get pods -l 'app=wale-nginx' -o wide | awk {'print $1" " $3 " " $6'} | column -t
