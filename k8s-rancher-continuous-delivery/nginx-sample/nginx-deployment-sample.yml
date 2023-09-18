@@ -12,7 +12,7 @@ metadata:
   labels:
     app: k8scd-nginx
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: k8scd
