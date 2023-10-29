@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "argoeks"
+  labels:
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/enforce: restricted 
+    pod-security.kubernetes.io/warn: restricted    
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "reactjswebapp"
+  namespace: "argoeks"
+spec:
+  selector:
+    matchLabels:
+      app: "reactjswebapp"
+  replicas: 0
+  template:
+    metadata:
+      labels:
+        app: "reactjswebapp"
+        role: "backend"
+    spec:
+      dnsPolicy: Default # "Default" is not the true default value
+      enableServiceLinks: false    # Disable service discovery
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true 
+        runAsUser: 1000   
+      containers:
+      - image: public.ecr.aws/q7r1z0m4/reactjs-nginx-8080:node18-alpine
+        imagePullPolicy: Always
+        name: "reactjswebapp"
+        resources:
+          requests:
+           memory: "64Mi"
+           cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL      
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: cache
+          mountPath: /var/cache/nginx
+        - name: usr
+          mountPath: /var/run    
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: usr
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: argoeks-service
+  namespace: argoeks  
+  annotations:
+   service.kubernetes.io/topology-mode: auto  
+spec:
+  selector:
+    app: "reactjswebapp"
+    role: "backend"    
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+  
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: argoeks
+  name: argoeks-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: my-shared-ingress # to be used by multiple services. Edit ingress and delete finalizers to be able to delete the ingress, otherwise, it will hang.
+    alb.ingress.kubernetes.io/tags: Auto-delete=no
+    ## SSL Settings
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}, {"HTTP": 8080}, {"HTTPS": 8443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:520817024429:certificate/fcc58e38-dbf0-4f55-9d0e-955da11d2da0
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06 #Optional (Picks default if not used)    
+spec:
+  ingressClassName: alb
+  defaultBackend:
+    service:
+      name: argoeks-service
+      port:
+        number: 80
+  rules:
+    - host: reactjsapp.whalecloud.awsps.myinstance.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: argoeks-service
+              port:
+                number: 80
