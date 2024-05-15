@@ -16,7 +16,7 @@ spec:
   selector:
     matchLabels:
       app: "reactjswebapp"
-  replicas: 50
+  replicas: 1
   template:
     metadata:
       labels:
