@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: python-web-app
+  name: python-web-app
+  namespace: cw-signals-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-web-app
+  strategy: {}
+  template:
+    metadata:
+      # add this annotation under the pod template metadata of the services deployment YAML you want to monitor
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "true"    
+      labels:
+        app: python-web-app
+    spec:
+      containers:
+      - image: berry2012/flask-app
+        name: flask-app
+        ports:
+        - containerPort: 5000
+        resources: {}
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-web-app-service
+  namespace: cw-signals-demo 
+  annotations:
+   service.kubernetes.io/topology-mode: auto  
+spec:
+  selector:
+    app: "python-web-app"
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: ClusterIP
+  
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: cw-signals-demo 
+  name: python-web-app-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: my-shared-ingress # to be used by multiple services. Edit ingress and delete finalizers to be able to delete the ingress, otherwise, it will hang.
+    alb.ingress.kubernetes.io/tags: Auto-delete=no
+    ## SSL Settings
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}, {"HTTP": 8080}, {"HTTPS": 8443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:520817024429:certificate/fcc58e38-dbf0-4f55-9d0e-955da11d2da0
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06 #Optional (Picks default if not used)    
+spec:
+  ingressClassName: alb
+  defaultBackend:
+    service:
+      name: python-web-app-service
+      port:
+        number: 5000
+  rules:
+    - host: flaskwebapp.whalecloud.awsps.myinstance.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: python-web-app-service
+              port:
+                number: 80
