@@ -1,3 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "cw-signals-demo"
+  labels:
+    pod-security.kubernetes.io/audit: baseline
+    pod-security.kubernetes.io/enforce: baseline 
+    pod-security.kubernetes.io/warn: baseline   
+---    
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,9 +28,30 @@ spec:
       labels:
         app: python-web-app
     spec:
+      dnsPolicy: Default # "Default" is not the true default value
+      enableServiceLinks: false    # Disable service discovery
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsNonRoot: true 
+        runAsUser: 5678       
       containers:
       - image: berry2012/flask-app
         name: flask-app
+        resources:
+          requests:
+           memory: "64Mi"
+           cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL           
         ports:
         - containerPort: 5000
         resources: {}
@@ -61,11 +91,6 @@ metadata:
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06 #Optional (Picks default if not used)    
 spec:
   ingressClassName: alb
-  defaultBackend:
-    service:
-      name: python-web-app-service
-      port:
-        number: 5000
   rules:
     - host: flaskwebapp.whalecloud.awsps.myinstance.com
       http:
