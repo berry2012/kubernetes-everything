@@ -31,11 +31,11 @@ spec:
       dnsPolicy: Default # "Default" is not the true default value
       enableServiceLinks: false    # Disable service discovery
       automountServiceAccountToken: false
-      securityContext:
-        seccompProfile:
-          type: RuntimeDefault
-        runAsNonRoot: true 
-        runAsUser: 5678       
+      # securityContext:
+      #   seccompProfile:
+      #     type: RuntimeDefault
+      #   runAsNonRoot: true 
+      #   runAsUser: 5678       
       containers:
       - image: berry2012/flask-app
         name: flask-app
@@ -46,12 +46,12 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
-        securityContext:
-          allowPrivilegeEscalation: true
-          readOnlyRootFilesystem: false
-          capabilities:
-            drop:
-              - ALL           
+        # securityContext:
+        #   allowPrivilegeEscalation: false
+        #   readOnlyRootFilesystem: true
+        #   capabilities:
+        #     drop:
+        #       - ALL           
         ports:
         - containerPort: 5000
         resources: {}
