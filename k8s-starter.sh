@@ -13,8 +13,8 @@ echo 'alias kg="kubectl get"' >> ~/.bashrc
 echo 'alias kc="kubectl create -f"' >> ~/.bashrc
 echo 'alias ka="kubectl apply -f"' >> ~/.bashrc
 echo 'alias kd="kubectl describe"' >> ~/.bashrc
-echo 'export do="--dry-run=client -o yaml"' >> ~/.bashrc   
-echo 'export now="--force --grace-period 0"' >> ~/.bashrc
+echo 'alias do="--dry-run=client -o yaml"' >> ~/.bashrc   
+echo 'alias now="--force --grace-period 0"' >> ~/.bashrc
 echo 'alias c=clear' >> ~/.bashrc
 
 source ~/.bashrc
@@ -22,7 +22,7 @@ source ~/.bashrc
 
 ## or apply to your present terminal
 alias k=kubectl                         # will already be pre-configured
-export do="--dry-run=client -o yaml"    # k get pod x $do
-export now="--force --grace-period 0"   # k delete pod x $now
+alias do="--dry-run=client -o yaml"    # k get pod x $do
+alias now="--force --grace-period 0"   # k delete pod x $now
 
 
